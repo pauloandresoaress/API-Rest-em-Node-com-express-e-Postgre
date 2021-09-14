@@ -13,9 +13,14 @@ module.exports = app => {
         await Atendimentos.create(req.body, res);
     });
 
-    app.patch('/atendimentos/:id', async (req, res) => {
+    app.put('/atendimentos/:id', async (req, res) => {
         const id = parseInt(req.params.id);
         const atendimento = req.body;
         await Atendimentos.update(id, atendimento, res);
-    })
+    });
+
+    app.delete('/atendimentos/:id', async (req, res) => {
+        const id = parseInt(req.params.id);
+        Atendimentos.delete(id, res);
+    });
 }
