@@ -2,6 +2,7 @@ class Tabelas {
     init(conexao){
         this.conexao = conexao
         this.criarAtendimentos()
+        this.criarPets()
     }
 
     criarAtendimentos() {
@@ -17,8 +18,26 @@ class Tabelas {
             OBSERVACOES TEXT
         )`;
         this.conexao.query(sql, (error) => {
-            if(error) console.error(error);
+            if(error) 
+                console.error(error);
+            else
+                console.log("Tabela ATENDIMENTOS está pronta!");
         })
+    }
+
+    criarPets(){
+        const query = `CREATE TABLE IF NOT EXISTS PETS(
+            ID SERIAL PRIMARY KEY,
+            NOME VARCHAR(50),
+            IMAGEM VARCHAR(200)
+        )`;
+
+        this.conexao.query(query, error => {
+            if(error)
+                console.error(error)
+            else
+                console.log("Tabela PETS está pronta!");
+        });
     }
 }
 

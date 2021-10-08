@@ -1,4 +1,5 @@
-if(process.env.NODE_ENVIRONMENT == 'DEV') require('dotenv/config');
+// if(process.env.NODE_ENVIRONMENT == 'DEV')
+require('dotenv/config');
 const { Client } = require('pg');
 module.exports = () => {
     const sqlConfig = {
