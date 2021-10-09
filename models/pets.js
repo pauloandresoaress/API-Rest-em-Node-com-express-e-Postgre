@@ -1,5 +1,5 @@
-const conexao = require('../database/conexao')();
-const uploadDeArquivo = require('../archives/uplopadImage');
+const conexao = require('../infrastructure/database/conexao')();
+const uploadDeArquivo = require('../infrastructure/archives/uplopadImage');
 class Pet{
     create(pet, res){
         uploadDeArquivo(pet.image, pet.name, (error, newPath) => {

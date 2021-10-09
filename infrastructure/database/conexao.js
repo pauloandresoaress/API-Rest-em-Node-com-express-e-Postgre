@@ -1,7 +1,7 @@
 // if(process.env.NODE_ENVIRONMENT == 'DEV')
 require('dotenv/config');
 const { Client } = require('pg');
-module.exports = () => {
+module.exports = async () => {
     const sqlConfig = {
         user: process.env.USER,
         host: process.env.HOST,

@@ -1,31 +1,42 @@
-const conexao = require('../database/conexao')();
+const conexao = require('../infrastructure/database/conexao')();
+const repositorio = require('../repository/atendimento')
 class Atendimentos {
-    async create(atendimento, res){
+    constructor(){
+        this.dataEhValida = ({data, data_criacao}) => {
+            return data.getTime() >= data_criacao.getTime();
+        } 
+        this.clienteEhValido = (cliente) => cliente.length >= 5;
+        this.validacoes = [
+            { 
+                error:"data",
+                valido:this.dataEhValida,
+                message:"A data de agendamento deve ser maior que a data de criação"
+            },
+            {
+                error:"cliente",
+                valido:this.clienteEhValido, 
+                message:"O nome do cliente deve possuir no mínimo 5 caracteres"
+            }
+        ];
+    }
+    async create(atendimento){
         const atendimentoTratado = tratarAtendimento(atendimento);
         if(atendimentoTratado.isError){
-            res.status(400).json(atendimentoTratado.errors);
+            return atendimentoTratado.errors
         }else{
             atendimento = atendimentoTratado.atendimento;
-            const sql = `INSERT INTO ATENDIMENTOS(CLIENTE, PET, SERVICO, STATUS, OBSERVACOES, DATA, DATA_CRIACAO) VALUES ('${atendimento.cliente}','${atendimento.pet}','${atendimento.servico}','${atendimento.status}','${atendimento.observacoes}','${atendimento.data}','${atendimento.data_criacao}') RETURNING ID;`;
-            await conexao.query(sql)
+            return await repositorio.create(atendimento)
             .then( result => {
-                res.status(201).json({ id:result.rows[0].id,...atendimento })
+                return result[0];
             })
             .catch( error => {
-                res.status(400).json({ erro: error });
-            });
+                return { erro: error }
+            })
         } 
     }
 
     async list(res){
-        const sql = `SELECT * FROM ATENDIMENTOS`;
-        await conexao.query(sql)
-        .then( result => {
-            res.status(200).json(result.rows);
-        })
-        .catch( err => {
-            res.status(400).json({ erro: err });
-        })
+        return repositorio.lista()
     }
 
     async get(id, res){
@@ -75,21 +86,11 @@ function tratarDataParaYYYYMMDD(data){
 function tratarAtendimento(atendimento){
     let data_criacao = new Date();
     let data = new Date(tratarDataParaYYYYMMDD(atendimento.data));
-    const dataEhValida =  data.getTime() >= data_criacao.getTime();
-    const clienteEhValido = atendimento.cliente.length >= 5;
-    const validacoes = [
-        { 
-            error:"data",
-            valido:dataEhValida,
-            message:"A data de agendamento deve ser maior que a data de criação"
-        },
-        {
-            error:"cliente",
-            valido:clienteEhValido, 
-            message:"O nome do cliente deve possuir no mínimo 5 caracteres"
-        }
-    ];
-    const verificaValidacoes = validacoes.filter( validacao => !validacao.valido );
+    const params = {
+        data:{data, data_criacao},
+        cliente:atendimento.cliente
+    }
+    const verificaValidacoes = this.validacoes(params).filter( validacao => !validacao.valido );
     if(verificaValidacoes.length){
         return { isError:true, errors:verificaValidacoes}
     }else{
